@@ -1,0 +1,215 @@
+variables:
+  CCACHE_COMPILERCHECK: content
+  CCACHE_DIR: "${CI_PROJECT_DIR}/.ccache"
+  # prevent configure tzdata hanging apt install commands
+  DEBIAN_FRONTEND: noninteractive
+
+include:
+  - template: 'Workflows/Branch-Pipelines.gitlab-ci.yml'
+
+stages:
+  - prepare
+  - build
+
+.build-synapse-image:
+  stage: prepare
+  image:
+    # newer version doesn't seem to like our arm runner
+    name: gcr.io/kaniko-project/executor:v1.6.0-debug
+    entrypoint: [""]
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      changes:
+        - .ci/synapse/Dockerfile
+        - .ci/synapse/setup-synapse.sh
+        - .ci/synapse/service/synapse/*
+        - .ci/synapse/service/postgresql/*
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --whitelist-var-run=false --context $CI_PROJECT_DIR/.ci/synapse --dockerfile $CI_PROJECT_DIR/.ci/synapse/Dockerfile --destination $CI_REGISTRY_IMAGE/synapse-${M_ARCH}:latest
+
+build synapse amd64:
+  extends: .build-synapse-image
+  tags: [docker]
+  variables:
+    M_ARCH: x86_64
+
+build synapse arm64:
+  extends: .build-synapse-image
+  tags: [docker-arm64]
+  variables:
+    M_ARCH: aarch64
+
+.build-linux:
+  stage: build
+  image: ubuntu:22.04
+  services:
+    - name: $CI_REGISTRY_IMAGE/synapse-${M_ARCH}:latest
+      alias: synapse
+  variables:
+    TRAVIS_OS_NAME: linux
+  before_script:
+    - apt-get update
+    - apt-get install -y software-properties-common
+    - add-apt-repository ppa:ubuntu-toolchain-r/test -y
+    - apt-get update && apt-get -y install --no-install-recommends build-essential ninja-build libssl-dev git ccache curl lcov gcovr cmake libgtest-dev
+    # need recommended deps for wget
+    - apt-get -y install wget
+    - rm -rf ../.hunter && mv .hunter ../.hunter || true
+  script:
+    - curl -s -f -k https://synapse:8008/_matrix/client/versions
+    - export PATH="/usr/lib/ccache:${PATH}"
+    - export CMAKE_BUILD_PARALLEL_LEVEL=$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)
+    - export PATH="/usr/local/bin/:${PATH}"
+    - cmake -GNinja -H. -Bbuild
+        -DCMAKE_INSTALL_PREFIX=.deps/usr
+        -DHUNTER_ROOT="../.hunter"
+        -DHUNTER_ENABLED=ON -DBUILD_SHARED_LIBS=OFF
+        -DCMAKE_BUILD_TYPE=Debug -DHUNTER_CONFIGURATION_TYPES=Debug
+        -DCI_BUILD=ON
+        -DCOVERAGE=${COVERAGE}
+        -DJSON_ImplicitConversions=OFF
+    - cmake --build build
+    - MTXCLIENT_SERVER=synapse GTEST_OUTPUT=xml:junit-output/ make test
+  after_script:
+    - mv ../.hunter .hunter
+  cache:
+    key: "$CI_JOB_NAME"
+    paths:
+      - .hunter/
+      - .ccache
+  artifacts:
+    reports:
+      junit: build/junit-output/*.xml
+    paths: 
+      - build/junit-output/*.xml
+
+build linux amd64:
+  extends: .build-linux
+  tags: [docker]
+  variables:
+    M_ARCH: x86_64
+    COVERAGE: "ON"
+  after_script:
+    - ./.ci/coverage.sh
+    - (cd build && gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml -e '../tests' -e '../examples' -e '_deps' --root ${CI_PROJECT_DIR})
+    - bash <(curl -s https://codecov.io/bash) -f build/coverage.info || echo "Codecov failed"
+    - mv ../.hunter .hunter
+  needs:
+    - job: "build synapse amd64"
+      optional: true
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage.xml
+    paths: 
+      - build/junit-output/*.xml
+      - build/coverage.xml
+
+build linux arm64:
+  extends: .build-linux
+  tags: [docker-arm64]
+  variables:
+    M_ARCH: aarch64
+  needs:
+    - job: "build synapse arm64"
+      optional: true
+
+build linux meson wraps:
+  stage: build
+  image: alpine:latest
+  tags: [docker]
+  needs:
+    - job: "build synapse amd64"
+      optional: true
+  variables:
+    M_ARCH: x86_64
+    COVERAGE: "ON"
+  services: !reference [.build-linux, services]
+  before_script:
+    - echo 'https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
+    - apk update && apk add meson git g++ cmake pkgconf openssl openssl-dev make
+  script:
+    - meson setup builddir -Dtests=true -Dexamples=true -Ddefault_library=static
+    - meson compile -C builddir
+    - 'MTXCLIENT_SERVER=synapse meson test -C builddir mtxclient:'
+  artifacts:
+    reports:
+      junit: builddir/*.xml
+    paths:
+      - builddir/*.xml
+
+build-macos:
+  stage: build
+  tags: [macos]
+  needs: []
+  before_script:
+    - rm -rf ../.hunter && mv .hunter ../.hunter || true
+  script:
+    - export PATH=/usr/local/opt/qt/bin/:${PATH}
+    - cmake -GNinja -H. -Bbuild
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -DCMAKE_INSTALL_PREFIX=.deps/usr
+        -DHUNTER_ROOT="../.hunter"
+        -DHUNTER_ENABLED=ON -DBUILD_SHARED_LIBS=OFF
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHUNTER_CONFIGURATION_TYPES=RelWithDebInfo
+        -DUSE_BUNDLED_OPENSSL=ON
+        -DCI_BUILD=ON
+    - cmake --build build
+    - mv ../.hunter .hunter
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .hunter/
+      - "${CCACHE_DIR}"
+
+linting:
+  stage: build
+  image: alpine:latest
+  tags: [docker]
+  needs: []
+  before_script:
+    - apk update && apk add make git python3 py3-pip
+    - apk add clang-extra-tools --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main
+  script:
+    - make lint
+
+test-pages:
+  stage: build
+  tags: [docker]
+  image: alpine:latest
+  except:
+    - master
+  needs: []
+  before_script:
+    - apk update
+    - apk add doxygen git texlive-full py3-jinja2 py3-pygments
+    - git clone https://github.com/mosra/m.css.git
+  script:
+    - ./m.css/documentation/doxygen.py Doxyfile-mcss
+    - mv generated-docs/html/ public/
+  artifacts:
+    paths:
+      - public
+  
+pages:
+  stage: build
+  tags: [docker]
+  image: alpine:latest
+  only:
+    - master
+  needs: []
+  before_script:
+    - apk update
+    - apk add doxygen git texlive-full py3-jinja2 py3-pygments
+    - git clone https://github.com/mosra/m.css.git
+  script:
+    - ./m.css/documentation/doxygen.py Doxyfile-mcss
+    - mv generated-docs/html/ public/
+  artifacts:
+    paths:
+      - public
+

@@ -1,0 +1,13 @@
+nheko for Debian
+----------------
+
+Since nheko is currently the only package that uses mtxclient, and nheko links
+to it statically, we include the sources for mtxclient with nheko's source.  If
+you have separate tarballs for nheko and mtxclient, the tarball for nheko
+should be named normally for an orig.tar.* file, and the tarball for
+mtxclient should be named nheko_<nhekoversion>.orig-mtxclient.tar.*.  If
+you have an unpacked source (with the appropriate version of mtxclient placed
+in the mtxclient directory), then you can run "debian/rules make-orig-source"
+to create the tarballs for nheko and mtxclient.
+
+ -- Hubert Chathi <uhoreg@debian.org>, Thu, 23 Apr 2020 11:18:30 -0400

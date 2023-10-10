@@ -1,5 +1,321 @@
-template-repository (1.0-1) unstable; urgency=medium
+nheko (0.11.3-2) unstable; urgency=medium
 
-  * Initial release
+  * debian/control: Downgrade gstreamer1.0-vaapi to a Suggests.
 
- -- Tsic404 <liuheng@deepin.org>  Sat, 28 Jan 2023 13:46:49 +0800
+ -- Hubert Chathi <uhoreg@debian.org>  Thu, 23 Mar 2023 12:17:45 -0400
+
+nheko (0.11.3-1) unstable; urgency=medium
+
+  * New upstream version.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 22 Feb 2023 21:07:56 -0500
+
+nheko (0.11.2-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Use system cpp-httplib instead of bundled version.
+  * debian/copyright: add info about third_party directory
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 21 Feb 2023 20:08:30 -0500
+
+nheko (0.11.1-1) unstable; urgency=medium
+
+  * New upstream version.
+  * debian/control: update dependencies (Thanks to Pablo Barciela)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 07 Feb 2023 21:29:48 -0500
+
+nheko (0.10.2-1) unstable; urgency=medium
+
+  * Team upload.
+  * Do not force upstream version name in debian/gbp.conf
+  * Reorder sequence of d/control fields by cme (routine-update)
+  * Remove trailing whitespace in debian/rules (routine-update)
+  * Do not parse debian/changelog in debian/rules
+  * Do not parse d/changelog (routine-update)
+  * Rules-Requires-Root: no (routine-update)
+  * Set upstream metadata fields: Bug-Database, Bug-Submit, Repository,
+    Repository-Browse.
+  * Lower memory requirements on architectures with only 2 GB address
+    space (Thanks for the hint to Mathieu Malaterre)
+    Closes: #1017752
+
+ -- Andreas Tille <tille@debian.org>  Thu, 29 Sep 2022 10:56:43 +0200
+
+nheko (0.10.1-1) experimental; urgency=medium
+
+  * Team upload.
+  * New upstream version (also mtxclient was bumped to version 0.8.2)
+  * Fix watch file
+  * Check debian/copyright
+  * Add debian/salsa-ci.yml
+
+ -- Andreas Tille <tille@debian.org>  Wed, 28 Sep 2022 12:12:46 +0200
+
+nheko (0.10.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/control: recommend kimageformat-plugins and qt5-image-formats-plugins
+    to handle more image formats
+
+ -- Hubert Chathi <uhoreg@debian.org>  Fri, 05 Aug 2022 11:33:33 -0400
+
+nheko (0.9.3+ds-1) unstable; urgency=medium
+
+  * Add extra orig tarballs as a gbp components (Closes: #1013974)
+  * Bump Standards-Version to 4.6.1 (no changes needed)
+
+ -- Pirate Praveen <praveen@debian.org>  Tue, 28 Jun 2022 21:27:17 +0530
+
+nheko (0.9.3-2) unstable; urgency=medium
+
+  * debian/control: Add some missing dependencies.  Thanks to Pablo Barciela.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 08 Jun 2022 10:34:29 -0400
+
+nheko (0.9.3-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 07 Jun 2022 13:23:39 -0400
+
+nheko (0.9.1-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 22 Feb 2022 19:15:22 -0500
+
+nheko (0.9.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/patches/disambiguate_olmerrorcode: removed -- no longer needed.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Fri, 03 Dec 2021 14:18:39 -0500
+
+nheko (0.8.2-2) unstable; urgency=medium
+
+  * debian/control: Add missing QML dependency. (Closes: #990351)
+  * debian/patches/disambiguate_olmerrorcode: Fix build with newer libolm.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Sat, 16 Oct 2021 14:42:04 -0400
+
+nheko (0.8.2-1) experimental; urgency=medium
+
+  [ Pirate Praveen ]
+
+  * debian/control: Add missing gstreamer dependencies. (Closes: #981104)
+
+  [ Hubert Chathi ]
+
+  * New upstream release. (Closes: #981525)
+  * debian/control: update with new build-depends
+  * debian/patches/no_find_tweeny: removed -- not needed any more.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 11 May 2021 16:26:27 -0400
+
+nheko (0.8.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/control:
+    * add build-depends on gstreamer
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 20 Jan 2021 14:07:37 -0500
+
+nheko (0.7.2-3) unstable; urgency=medium
+
+  * debian/control:
+    * Use default boost dev packages (Closes: #977185)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Mon, 14 Dec 2020 16:02:58 -0500
+
+nheko (0.7.2-2) unstable; urgency=medium
+
+  * debian/control:
+    * Recommend fonts-noto-color-emoji
+  * patches/no_compile_qml:
+    * Don't compile QML files (Closes: #964015)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Fri, 10 Jul 2020 12:22:09 -0400
+
+nheko (0.7.2-1) unstable; urgency=medium
+
+  [ Helmut Grohne ]
+
+  * Fix FTCBFS: (Closes: #962682)
+    + Drop g++ build dependency satisfied in buster.
+    + Let dh_auto_configure pass cross flags to cmake.
+
+  [ Nilesh Patra ]
+
+  * Fix building for backports.
+
+  [ Hubert Chathi ]
+
+  * New upstream release.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 16 Jun 2020 17:44:09 -0400
+
+nheko (0.7.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/control:
+    * don't use alternative build-depends as the buildds don't support it
+
+ -- Hubert Chathi <uhoreg@debian.org>  Fri, 24 Apr 2020 14:02:57 -0400
+
+nheko (0.7.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/control:
+    * use backports friendly version
+    * new and updated build-depends
+    * bump debhelper compat
+    * bump standards version
+  * debian/patches/series:
+    * remove unneeded patches
+    * add a patch to hardcode path to tweeny instead of searching with cmake
+
+ -- Hubert Chathi <uhoreg@debian.org>  Thu, 23 Apr 2020 11:56:44 -0400
+
+nheko (0.6.4-3) unstable; urgency=medium
+
+  * debian/rules:
+    * respect dpkg-buildflags
+    * use external fmt library in spdlog (Closes: #952613)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Thu, 05 Mar 2020 11:55:30 -0500
+
+nheko (0.6.4-2) unstable; urgency=medium
+
+  * debian/control: bump build-depend on nlohmann-json, to fix build failure
+
+ -- Hubert Chathi <uhoreg@debian.org>  Thu, 01 Aug 2019 16:39:11 -0400
+
+nheko (0.6.4-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/patches/v3_support: Removed -- no longer needed
+  * debian/control, debian/rules: don't use ninja
+  * debian/control:
+    * remove build-dependency hack for boost
+    * depend on newer version of nlohmann-json, which includes cmake support
+  * debian/copyright: fix copyright for nheko.appdata.xml
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 30 Jul 2019 15:10:29 -0400
+
+nheko (0.6.3-2) unstable; urgency=medium
+
+  * Support v3 rooms (Closes: #926671)
+  * debian/rules: clean up fakehome (Closes: #926680)
+  * debian/README.source: fix filename (Closes: #926659)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Mon, 22 Apr 2019 14:42:00 -0400
+
+nheko (0.6.3-1) unstable; urgency=medium
+
+  * New upstream release.
+    * Project is no longer dead. (Closes: #913726)
+    * Update files to point to new upstream location.
+    * Update copyright file.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Fri, 08 Feb 2019 15:35:59 -0500
+
+nheko (0.6.1-3) unstable; urgency=medium
+
+  * debian/rules: make cmake write to a dummy home directory. (Closes:
+    #914065)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 20 Nov 2018 10:08:17 -0500
+
+nheko (0.6.1-2) unstable; urgency=medium
+
+  * debian/control: fix build-depends. (Closes: #913890)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Fri, 16 Nov 2018 11:24:13 -0500
+
+nheko (0.6.1-1) unstable; urgency=medium
+
+  * New upstream release. (Closes: #908101)
+  * debian/control:
+    * Update maintainer address. (Closes: #908089)
+    * Add new build-depends, and sort the build-depends list.
+  * debian/patches/*: Removed some no-longer-needed files, and moved a
+    patch
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 26 Sep 2018 19:17:51 -0400
+
+nheko (0.4.2-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 30 May 2018 08:41:41 -0400
+
+nheko (0.4.0-2) unstable; urgency=medium
+
+  * debian/control: recommend installing ca-certificates
+
+ -- Hubert Chathi <uhoreg@debian.org>  Tue, 29 May 2018 23:08:05 -0400
+
+nheko (0.4.0-1) unstable; urgency=medium
+
+  * New upstream release
+
+ -- Hubert Chathi <uhoreg@debian.org>  Thu, 03 May 2018 14:05:36 -0400
+
+nheko (0.3.0-1) unstable; urgency=medium
+
+  * New upstream release.
+  * debian/control:
+    * add new Build-Depends
+    * require newer GCC to support C++-17
+    * no longer build-depend on Boost
+  * debian/patches/cmake_verbose: update patch
+  * debian/patches/no_download: update patch
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 04 Apr 2018 23:13:38 -0400
+
+nheko (0.2.1-1) unstable; urgency=medium
+
+  * New upstream release.
+    * debian/patches/cmake_verbose: update patch
+    * debian/patches/no_download: update patch
+    * debian/patches/no_rpath: don't let cmake set the rpath
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 28 Mar 2018 23:19:25 -0400
+
+nheko (0.1.0-1) unstable; urgency=medium
+
+  * New upstream release.
+    * debian/control: add new Build-Depends
+    * debian/copyright: add copyright info for libs/matrix-structs
+    * debian/patches/series: no_march not needed any more
+    * debian/patches/cmake_verbose: update patch
+    * debian/patches/no_download: don't try to download dependencies
+
+ -- Hubert Chathi <uhoreg@debian.org>  Thu, 28 Dec 2017 16:54:20 -0500
+
+nheko (0.0+git20171116.21fdb26-2) unstable; urgency=medium
+
+  * Don't use -march=native. (Closes: #882206)
+  * Make build more verbose.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Thu, 23 Nov 2017 14:21:25 -0500
+
+nheko (0.0+git20171116.21fdb26-1) unstable; urgency=medium
+
+  * New upstream version.
+  * Update build-dependency for Qt5LinguistTools. (Closes: #881914)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Sun, 19 Nov 2017 17:38:38 -0500
+
+nheko (0.0+git20170715.3c1f969-2) unstable; urgency=medium
+
+  * Add missing entries in copyright file.
+
+ -- Hubert Chathi <uhoreg@debian.org>  Fri, 08 Sep 2017 17:56:40 -0400
+
+nheko (0.0+git20170715.3c1f969-1) unstable; urgency=medium
+
+  * Initial release (Closes: #864374)
+
+ -- Hubert Chathi <uhoreg@debian.org>  Wed, 26 Jul 2017 21:22:29 -0400

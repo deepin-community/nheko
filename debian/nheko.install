@@ -1,0 +1,11 @@
+#!/usr/bin/dh-exec --with=install
+build/nheko /usr/bin
+build/resources/nheko.appdata.xml /usr/share/metainfo
+build/resources/nheko.desktop /usr/share/applications
+resources/nheko-16.png => /usr/share/icons/hicolor/16x16/apps/nheko.png
+resources/nheko-32.png => /usr/share/icons/hicolor/32x32/apps/nheko.png
+resources/nheko-48.png => /usr/share/icons/hicolor/48x48/apps/nheko.png
+resources/nheko-64.png => /usr/share/icons/hicolor/64x64/apps/nheko.png
+resources/nheko-128.png => /usr/share/icons/hicolor/128x128/apps/nheko.png
+resources/nheko-256.png => /usr/share/icons/hicolor/256x256/apps/nheko.png
+resources/nheko-512.png => /usr/share/icons/hicolor/512x512/apps/nheko.png

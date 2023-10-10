@@ -1,4 +1,42 @@
 #!/usr/bin/make -f
 
+CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS) $(FMTFLAGS)
+CFLAGS:=$(shell dpkg-buildflags --get CFLAGS) $(CPPFLAGS) $(FMTFLAGS)
+CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS) $(CPPFLAGS) $(FMTFLAGS)
+LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
+
+export QT_SELECT=5
+
+# Lower memory requirements on architectures with only 2 GB address space
+ifneq (,$(filter $(DEB_HOST_ARCH),mips mipsel sh4 hppa))
+    CFLAGS := $(CFLAGS:-g1=-g0)
+    CFLAGS := $(CFLAGS:-O2=-Os)
+    CPPFLAGS += --param ggc-min-expand=10
+endif
+
 %:
 	dh $@
+
+# set $HOME to a dummy directory, because cmake tries to write stuff to $HOME
+override_dh_auto_build: FAKEHOME = HOME=$(CURDIR)/fakehome
+override_dh_auto_build:
+	[ -d fakehome ] || mkdir fakehome
+	$(FAKEHOME) dh_auto_configure --sourcedirectory=coeurl --builddirectory=.deps/coeurl --  -DCMAKE_VERBOSE_MAKEFILE=ON
+	cd .deps/coeurl && make
+	$(FAKEHOME) dh_auto_configure --sourcedirectory=mtxclient --builddirectory=.deps/mtxclient -- -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_LIB_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_LIB_EXAMPLES=OFF -Dcoeurl_DIR=$(CURDIR)/.deps/coeurl
+	$(FAKEHOME) dh_auto_build --sourcedirectory=mtxclient --builddirectory=.deps/mtxclient
+	$(FAKEHOME) dh_auto_configure --builddirectory=build -- -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=ON -DBUILD_LIB_EXAMPLES=OFF -DUSE_BUNDLED_CPPHTTPLIB=OFF -DLMDBXX_INCLUDE_DIR=$(CURDIR)/lmdbxx -Dcoeurl_DIR=$(CURDIR)/.deps/coeurl -DMatrixClient_DIR=$(CURDIR)/.deps/mtxclient
+	$(FAKEHOME) dh_auto_build --builddirectory=build
+	rm -rf fakehome
+
+override_dh_auto_test:
+	#
+
+override_dh_auto_clean:
+	rm -rf .deps build fakehome
+
+include /usr/share/dpkg/default.mk
+make-orig-source:
+	tar czf ../nheko_$(DEB_VERSION_UPSTREAM).orig.tar.gz --exclude-vcs --exclude-backups --exclude /debian --exclude /mtxclient /lmdbxx -C .. `basename $(CURDIR)`
+	tar czf ../nheko_$(DEB_VERSION_UPSTREAM).orig-mtxclient.tar.gz --exclude-vcs --exclude-backups mtxclient
+	tar czf ../nheko_$(DEB_VERSION_UPSTREAM).orig-lmdbxx.tar.gz --exclude-vcs --exclude-backups lmdbxx

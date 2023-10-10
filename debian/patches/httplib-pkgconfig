@@ -1,0 +1,18 @@
+Description: Use pkgconfig to find cpp-httplib
+Author: Hubert Chathi <hubert@uhoreg.ca>
+Last-Update: 2023-02-22
+
+--- nheko-0.11.2.orig/CMakeLists.txt
++++ nheko-0.11.2/CMakeLists.txt
+@@ -705,8 +705,9 @@ if (USE_BUNDLED_CPPHTTPLIB)
+ 	target_include_directories(nheko PRIVATE third_party/cpp-httplib-0.5.12)
+ 	target_sources(nheko PRIVATE third_party/cpp-httplib-0.5.12/httplib.h)
+ else()
+-	find_package(httplib REQUIRED)
+-	target_link_libraries(nheko PRIVATE httplib::httplib)
++	find_package(PkgConfig REQUIRED)
++	pkg_check_modules(httplib REQUIRED IMPORTED_TARGET cpp-httplib)
++	target_link_libraries(nheko PRIVATE PkgConfig::httplib)
+ endif()
+ 
+ if (USE_BUNDLED_BLURHASH)
