@@ -1,0 +1,20 @@
+Description: compile coeurl with CMake
+ The CMakeList disallows building outside of FetchContent, but the way we're
+ compiling it is essentially the same.
+Author: Pablo Barciela
+Reviewed-By: Hubert Chathi <uhoreg@debian.org>
+Last-Update: 2023-01-21
+
+--- nheko-0.11.1.orig/coeurl/CMakeLists.txt
++++ nheko-0.11.1/coeurl/CMakeLists.txt
+@@ -29,10 +29,6 @@ project(coeurl
+ 	DESCRIPTION "Simple library to do http requests asynchronously via CURL in C++."
+ 	HOMEPAGE_URL "https://nheko.im/nheko-reborn/cocurl")
+ 
+-if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+-	message(FATAL_ERROR "The CMake build for coeurl is not intended for installation or usage outside of FetchContent. Use meson instead.")
+-endif()
+-
+ add_library(coeurl lib/client.cpp lib/request.cpp lib/errors.cpp)
+ add_library(coeurl::coeurl ALIAS coeurl)
+ target_include_directories(coeurl PUBLIC

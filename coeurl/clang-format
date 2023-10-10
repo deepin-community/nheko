@@ -1,0 +1,15 @@
+﻿---
+BasedOnStyle: Google
+AccessModifierOffset: '-4'
+AlignConsecutiveAssignments: 'true'
+AllowShortFunctionsOnASingleLine: All
+Cpp11BracedListStyle: 'true'
+FixNamespaceComments: 'true'
+IndentWidth: '4'
+Language: Cpp
+PointerAlignment: Right
+ReflowComments: 'true'
+Standard: Cpp11
+UseTab: Never
+
+...

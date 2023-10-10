@@ -1,0 +1,110 @@
+variables:
+  CCACHE_COMPILERCHECK: content
+  CCACHE_DIR: "${CI_PROJECT_DIR}/.ccache"
+  SAST_EXCLUDED_ANALYZERS: "bandit,semgrep"
+
+build:
+  stage: build
+  image: alpine:latest
+  tags: [docker]
+  before_script:
+    - echo 'https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
+    - apk update && apk add meson git python3 py3-pip py3-flask lcov gcovr curl-dev libevent-dev spdlog-dev grep g++ cmake pkgconf openssl
+    - export PATH="$PATH:/root/.local/bin"
+    - pip3 install --user reuse
+    - ./scripts/run_tls_testserver.sh &
+    - ./scripts/run_testserver.sh &
+  script:
+    - meson setup builddir -Db_coverage=true -Dtests=true -Dexamples=true
+    - meson compile -C builddir
+    - ./builddir/tests/requests_tls -d --reporters=junit --out=https.xml
+    - ./builddir/tests/requests -d --reporters=junit --out=http.xml
+    - ./builddir/examples/coeurl_example
+    - ninja -C builddir coverage-text
+    - grep TOTAL builddir/meson-logs/coverage.txt
+  artifacts:
+    reports:
+      junit: http*.xml
+
+build-with-wraps:
+  stage: build
+  image: alpine:latest
+  tags: [docker]
+  before_script:
+    - echo 'https://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
+    - apk update && apk add meson git python3 py3-pip py3-flask g++ cmake pkgconf openssl openssl-dev make
+    - export PATH="$PATH:/root/.local/bin"
+    - pip3 install --user reuse
+    - ./scripts/run_tls_testserver.sh &
+    - ./scripts/run_testserver.sh &
+  script:
+    - meson setup builddir -Dtests=true -Dexamples=true --wrap-mode=forcefallback -Ddefault_library=static
+    - meson compile -C builddir
+    - ./builddir/tests/requests_tls -d --reporters=junit --out=https.xml
+    - ./builddir/tests/requests -d --reporters=junit --out=http.xml
+    - ./builddir/examples/coeurl_example
+  artifacts:
+    reports:
+      junit: http*.xml
+
+build-cmake:
+  stage: build
+  image: alpine:latest
+  tags: [docker]
+  before_script:
+    - apk update && apk add git curl-dev libevent-dev spdlog-dev g++ cmake pkgconf openssl samurai
+  script:
+    - cmake -GNinja -S tests/ -B build
+    - ninja -C build
+
+build-hunter:
+  stage: build
+  image: alpine:latest
+  tags: [docker]
+  before_script:
+    - apk update && apk add git curl-dev libevent-dev spdlog-dev g++ cmake pkgconf openssl samurai perl make linux-headers
+  script:
+    - cmake -GNinja -S tests/ -B build -DHUNTER_ENABLED=ON
+    - ninja -C build
+
+test-pages:
+  stage: build
+  tags: [docker]
+  image: alpine
+  except:
+    - master
+  needs: []
+  before_script:
+    - apk update
+    - apk add doxygen git texlive-full py3-jinja2 py3-pygments
+    - git clone https://github.com/mosra/m.css.git
+  script:
+    - ./m.css/documentation/doxygen.py Doxyfile-mcss
+    - mv generated-docs/html/ public/
+  artifacts:
+    paths:
+      - public
+
+pages:
+  stage: build
+  tags: [docker]
+  image: alpine
+  only:
+    - master
+  needs: []
+  before_script:
+    - apk update
+    - apk add doxygen git texlive-full py3-jinja2 py3-pygments
+    - git clone https://github.com/mosra/m.css.git
+  script:
+    - ./m.css/documentation/doxygen.py Doxyfile-mcss
+    - mv generated-docs/html/ public/
+  artifacts:
+    paths:
+      - public
+
+sast:
+  stage: build
+  tags: [docker]
+include:
+  - template: Security/SAST.gitlab-ci.yml  # https://gitlab.com/gitlab-org/gitlab/blob/master/lib/gitlab/ci/templates/Security/SAST.gitlab-ci.yml

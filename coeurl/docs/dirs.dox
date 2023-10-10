@@ -1,0 +1,7 @@
+/// @dir include
+/// @brief Include directory. Add this to your include path.
+
+/// @dir include/coeurl
+/// @brief The root directory for all the classes part of the public API.
+
+/// @example examples/coeurl.cpp

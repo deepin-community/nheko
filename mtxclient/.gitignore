@@ -1,0 +1,53 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Build artifacts
+/build*/
+/generated-docs/
+
+# Editor
+tags
+compile_commands.json
+.exrc
+.ccls-cache/
+.clangd/
+.*.sw*
+.vscode
+
+# Synapse data
+/data/
+
+# Deps
+.third-party
+.deps
+subprojects/coeurl/
+subprojects/libevent-*/
+subprojects/olm/
+subprojects/packagecache/
+subprojects/spdlog-*/

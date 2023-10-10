@@ -1,0 +1,7 @@
+# Compulsory line, this is a version 4 file
+version=4
+
+# GitHub hosted projects
+opts="filenamemangle=s%(?:.*?)?v?(\d[\d.]*)\.tar\.gz%@PACKAGE@-$1.tar.gz%" \
+   https://github.com/Nheko-reborn/nheko/tags \
+   (?:.*?/)?v(\d[\d.]*)\.tar\.gz
